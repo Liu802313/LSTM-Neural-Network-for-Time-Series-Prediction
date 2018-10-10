@@ -6,10 +6,16 @@ class DataLoader():
 	"""A class for loading and transforming data for the lstm model"""
 
 	def __init__(self, filename, split, cols):
-		dataframe = pd.read_csv(filename)
+		dataframe = pd.read_csv(filename,header=None)
+		print(len(dataframe))
 		i_split = int(len(dataframe) * split)
 		self.data_train = dataframe.get(cols).values[:i_split]
 		self.data_test  = dataframe.get(cols).values[i_split:]
+		self.data_train = self.data_train.astype('float64')
+		self.data_test = self.data_test.astype('float64')
+		self.data_train[:,0] = self.data_train[:,0]
+		self.data_test[:,0]  = self.data_test[:,0]
+		print(self.data_train)
 		self.len_train  = len(self.data_train)
 		self.len_test   = len(self.data_test)
 		self.len_train_windows = None
@@ -76,7 +82,7 @@ class DataLoader():
 		for window in window_data:
 			normalised_window = []
 			for col_i in range(window.shape[1]):
-				normalised_col = [((float(p) / float(window[0, col_i])) - 1) for p in window[:, col_i]]
+				normalised_col = [((float(p) / float(window[0, col_i]))  - 1)  for p in window[:, col_i]]
 				normalised_window.append(normalised_col)
 			normalised_window = np.array(normalised_window).T # reshape and transpose array back into original multidimensional format				
 			normalised_data.append(normalised_window)
