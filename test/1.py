@@ -6,12 +6,17 @@ import os
 
 fileList = []
 print(os.getcwd())
+os.chdir('test/')
 for i in os.listdir(os.getcwd()):
     #if(os.path.isfile(filepath)):
     print(i)
     if(os.path.splitext(i)[1] ==".csv"):
         fileList.append(i)
 print(fileList)
+data_train_all = []
+data_train_all = np.array(data_train_all)
+data_train_all = data_train_all.reshape(0,2)
+print(data_train_all)
 for i in fileList:
     dataframe = pd.read_csv(i,header=None)
 
@@ -29,4 +34,7 @@ for i in fileList:
         if(data_train_new[i,0] != 0):
             data_train_new[i,1] = data_train_new[i,1] / data_train_new[i,0]
     data_train_new = np.delete(data_train_new,0,axis=0)
-    print(data_train_new)
+    print(data_train_new.shape)
+    data_train_all = np.concatenate((data_train_all,data_train_new),axis=0)
+print(data_train_all.shape)
+
