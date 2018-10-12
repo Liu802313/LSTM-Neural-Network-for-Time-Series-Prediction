@@ -69,6 +69,7 @@ class DataLoader():
 		Warning: batch method, not generative, make sure you have enough memory to
 		load data, otherwise use generate_training_window() method.
 		'''
+		
 		data_x = []
 		data_y = []
 		for i in range(self.len_train - seq_len):
