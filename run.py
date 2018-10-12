@@ -34,7 +34,8 @@ def main():
 	configs = json.load(open('config.json', 'r'))
 
 	data = DataLoader(
-		os.path.join('data', configs['data']['filename']),
+		configs['data']['filename'],
+		os.path.join('data', configs['data']['filepath']),
 		configs['data']['train_test_split'],
 		configs['data']['columns']
 	)

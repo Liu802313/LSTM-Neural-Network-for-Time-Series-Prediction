@@ -1,21 +1,48 @@
 import math
 import numpy as np
 import pandas as pd
+import os
 
 class DataLoader():
 	"""A class for loading and transforming data for the lstm model"""
 
-	def __init__(self, filename, split, cols):
-		dataframe = pd.read_csv(filename,header=None)
-		print(len(dataframe))
-		i_split = int(len(dataframe) * split)
-		self.data_train = dataframe.get(cols).values[:i_split]
-		self.data_test  = dataframe.get(cols).values[i_split:]
-		self.data_train = self.data_train.astype('float64')
-		self.data_test = self.data_test.astype('float64')
-		self.data_train[:,0] = self.data_train[:,0]
-		self.data_test[:,0]  = self.data_test[:,0]
+	def __init__(self, filename, filepath, split, cols):
+		fileList = []
+		for i in os.walk(filepath):
+			if(filename in i[2]):
+				fileList.append(os.path.join(i[0] ,filename))
+		fileList = sorted(fileList,key = lambda a:int(os.path.split(os.path.split(a)[0])[1]))
+		data_all = []
+		data_all = np.array(data_all)
+		data_all = data_all.reshape(0,2)
+		for i in fileList:
+			dataframe = pd.read_csv(i,header=None)
+			data_train = dataframe.get([19,10]).values
+			data_train_new = []
+			for i in range(int(len(data_train)/120)):
+				data_train_new.append(data_train[120*i])
+
+			data_train_new = np.array(data_train_new)
+
+			for i in range(len(data_train_new)-1,0,-1):
+				data_train_new[i] = data_train_new[i] - data_train_new[i-1]
+				if(data_train_new[i,1] != 0):
+					data_train_new[i,0] = data_train_new[i,0] / data_train_new[i,1]
+			data_train_new = np.delete(data_train_new,0,axis=0)
+			data_all = np.concatenate((data_all,data_train_new),axis=0)
+		i_split = int(data_all.shape[0] * split)
+		self.data_train = data_all[:i_split]
+		self.data_test = data_all[i_split:]
 		print(self.data_train)
+		# dataframe = pd.read_csv(filename,header=None)
+		# i_split = int(len(dataframe) * split)
+		# self.data_train = dataframe.get(cols).values[:i_split]
+		# self.data_test  = dataframe.get(cols).values[i_split:]
+		# self.data_train = self.data_train.astype('float64')
+		# self.data_test = self.data_test.astype('float64')
+		# self.data_train[:,0] = self.data_train[:,0]
+		# self.data_test[:,0]  = self.data_test[:,0]
+		# print(self.data_train)
 		self.len_train  = len(self.data_train)
 		self.len_test   = len(self.data_test)
 		self.len_train_windows = None
@@ -27,12 +54,11 @@ class DataLoader():
 		load data, otherwise reduce size of the training split.
 		'''
 		data_windows = []
-		for i in range(self.len_test - seq_len):
+		for i in range(self.len_test - seq_len):		
 			data_windows.append(self.data_test[i:i+seq_len])
 
 		data_windows = np.array(data_windows).astype(float)
 		data_windows = self.normalise_windows(data_windows, single_window=False) if normalise else data_windows
-
 		x = data_windows[:, :-1]
 		y = data_windows[:, -1, [0]]
 		return x,y
